@@ -1,4 +1,5 @@
 import { createGlobalStyle, ThemeProvider } from 'styled-components'
+import { AlurakutStyles } from '../src/lib/AlurakutCommons'
 
 const GlobalStyle = createGlobalStyle`
   /* Reset CSS */
@@ -7,6 +8,7 @@ const GlobalStyle = createGlobalStyle`
    padding: 0;
    box-sizing: border-box;
  }
+
   body {
     font-family: sans-serif;
     background-color: #D9E6F6;
@@ -23,6 +25,8 @@ const GlobalStyle = createGlobalStyle`
     height: auto;
     display: block
   }
+
+  ${AlurakutStyles}//usando o AlurakutStyles que importamos lá em cima.
 `
 
 const theme = {
