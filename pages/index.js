@@ -22,19 +22,35 @@ function ProfileSidebar(propriedades) {
   )
 }
 
+function ProfileRelationsBox(propriedades) {
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {propriedades.title} ({propriedades.itens.length})
+      </h2>
+      <ul>
+        {/* {seguidores.map((itemAtual) => {
+          return (
+            <li key={itemAtual}>
+              <a href={`http://github/com/${itemAtual}.png`} >
+                <img src={itemAtual.image} />
+                <span>{itemAtual.title}</span>
+              </a>
+            </li>
+          )
+        })} */}
+      </ul>
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home() {
   const githubUser = 'marcoscurymoreira';
   const [comunidades, setComunidades] = React.useState([{
     id: '1545434545156442121',
     title: 'Eu odeio acordar cedo',
     image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg',
-  },
-  {
-    id: '154543454545445156442121',
-    title: 'Eu odeio acordar cedos',
-    image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg',
-  },
-  ]);
+  }]);
 
   const pessoasFavoritas = [
     'farelanders',
@@ -45,6 +61,19 @@ export default function Home() {
     'erikjborges',
     'professorisidro'
   ]
+  const [seguidores, setSeguidores] = React.useState([]);
+  //1- PEGANDO UM ARRAY DE DADOS DO GITHUB
+  React.useEffect(function () {
+    fetch('https://api.github.com/users/marcoscurymoreira/followers')
+      .then(function (respostaDoServidor) {
+        return respostaDoServidor.json();
+      })
+      .then(function (respostaCompleta) {
+        setSeguidores(respostaCompleta);
+      })
+  }, [])
+
+  //2- CRIANDO UM BOX QUE VAI TER UM MAP BASEADO NOS DADOS QUE VAMOS PEGAR DO GITHUB
 
   return (
     <>
@@ -102,8 +131,8 @@ export default function Home() {
             </form>
           </Box>
         </div>
-
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+          <ProfileRelationsBox title="Seguidores" itens={seguidores} />
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Comunidades ({comunidades.length})
@@ -121,6 +150,7 @@ export default function Home() {
               })}
             </ul>
           </ProfileRelationsBoxWrapper>
+
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Pessoas da comunidade ({pessoasFavoritas.length})
