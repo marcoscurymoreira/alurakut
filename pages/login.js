@@ -1,7 +1,7 @@
 import React from 'react';
 // Hook do NextJS
 import { useRouter } from 'next/router';
-// import nookies from 'nookies';
+import nookies from 'nookies';
 
 export default function LoginScreen() {
     const router = useRouter();
