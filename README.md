@@ -84,4 +84,4 @@ export default () => (
 </details>
 
 
-// npm run dev
+// yarn dev
