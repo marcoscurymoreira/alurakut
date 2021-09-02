@@ -1,22 +1,24 @@
 import React from 'react';
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
 import MainGrid from '../src/components/mainGrid/index'
 import Box from '../src/components/Box/index'
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons';
 import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations';
-import { useState } from 'react';
 
 function ProfileSidebar(propriedades) {
   return (
     <Box as="aside">
       <img src={`https://github.com/${propriedades.githubUser}.png`} style={{ borderRadius: '8px' }} />
-
       <hr />
+
       <p>
         <a className="boxLink" href={`https://github.com/${propriedades.githubUser}`}>
           @{propriedades.githubUser}
         </a>
       </p>
       <hr />
+
       <AlurakutProfileSidebarMenuDefault />
     </Box >
   )
@@ -44,10 +46,9 @@ function ProfileRelationsBox(propriedades) {
   )
 }
 
-export default function Home() {
-  const githubUser = 'marcoscurymoreira';
+export default function Home(props) {
+  const usuarioAleatorio = props.githubUser;
   const [comunidades, setComunidades] = React.useState([]);
-
   const pessoasFavoritas = [
     'farelanders',
     'italo-rodrigues1',
@@ -55,11 +56,12 @@ export default function Home() {
     'WelissonLuca',
     'mimaganin',
     'erikjborges',
-    'professorisidro'
+    'professorisidro',
   ]
   const [seguidores, setSeguidores] = React.useState([]);
   //1- PEGANDO UM ARRAY DE DADOS DO GITHUB
   React.useEffect(function () {
+    //GET
     fetch('https://api.github.com/users/marcoscurymoreira/followers')
       .then(function (respostaDoServidor) {
         return respostaDoServidor.json();
@@ -76,8 +78,7 @@ export default function Home() {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        "query": `query {
+      body: JSON.stringify({"query": `query {
         allCommunities {
           id
           title
@@ -94,18 +95,18 @@ export default function Home() {
       })
   }, [])
 
-  //2- CRIANDO UM BOX QUE VAI TER UM MAP BASEADO NOS DADOS QUE VAMOS PEGAR DO GITHUB
+  console.log('seguidores antes do return', seguidores);
+
+  //2- CRIANDO UM BOX QUE VAI TER UM MAP BASEADO NOS DADOS DO ARRAY QUE VAMOS PEGAR VINDO DO GITHUB
 
   return (
     <>
       <AlurakutMenu />
       <MainGrid>
         {/* Para usar dentro da mesma raiz duas tags HTML, a AlurakutMenu e MainGrid, precisamos usar um fragment (<> </>) */}
-
         <div className="profileArea" style={{ gridArea: 'profileArea' }}>
-          <ProfileSidebar githubUser={githubUser} />
+          <ProfileSidebar githubUser={usuarioAleatorio} />
         </div>
-
         <div className="welcomeArea" style={{ gridArea: 'welcomeArea' }}>
           <Box>
             <h1 className="title">
@@ -121,10 +122,13 @@ export default function Home() {
               e.preventDefault();
               const dadosDoForm = new FormData(e.target);
 
+              console.log('Campo: ', dadosDoForm.get('title'));
+              console.log('Campo: ', dadosDoForm.get('image'));
+
               const comunidade = {
                 title: dadosDoForm.get('title'),
                 imageUrl: dadosDoForm.get('image'),
-                creatorSlug: githubUser,
+                creatorSlug: usuarioAleatorio,
               }
 
               fetch('/api/comunidades', {
@@ -157,6 +161,7 @@ export default function Home() {
                   aria-label="Coloque uma URL para usarmos de capa"
                 />
               </div>
+
               <button>
                 Criar comunidade
               </button>
@@ -170,7 +175,7 @@ export default function Home() {
               Comunidades ({comunidades.length})
             </h2>
             <ul>
-              {comunidades.map((itemAtual) => {
+              {comunidades.slice(0,6).map((itemAtual) => {
                 return (
                   <li key={itemAtual.id}>
                     <a href={`/comunidades/${itemAtual.id}`} >
@@ -182,14 +187,13 @@ export default function Home() {
               })}
             </ul>
           </ProfileRelationsBoxWrapper>
-
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Pessoas da comunidade ({pessoasFavoritas.length})
             </h2>
 
             <ul>
-              {pessoasFavoritas.map((itemAtual) => {
+              {pessoasFavoritas.slice(0,6).map((itemAtual) => {
                 return (
                   <li key={itemAtual}>
                     <a href={`/users/${itemAtual}`} >
@@ -205,4 +209,26 @@ export default function Home() {
       </MainGrid>
     </>
   )
+}
+
+export async function getServerSideProps(ctx) {
+  const cookies = nookies.get(ctx);
+  const token = cookies.USER_TOKEN;
+  const decodedToken = jwt.decode(token);
+  const githubUser = decodedToken?.githubUser;
+
+  if (!githubUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {
+      githubUser,
+    }
+  }
 }
