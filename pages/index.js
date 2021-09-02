@@ -78,8 +78,8 @@ export default function Home() {
       },
       body: JSON.stringify({ "query": `query {
         allCommunities {
-          title
           id
+          title
           imageUrl
           creatorSlug
         }
